@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>邻拼购 - 周边商家凑单助手</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #FF6B6B;
+      --secondary-color: #FF8E53;
+      --success-color: #52C41A;
+      --warning-color: #FAAD14;
+      --info-color: #1890FF;
+      --bg-gradient: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+      --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --card-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #F8F9FA;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: white;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s ease;
+    }
+
+    .navbar-brand {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .navbar-brand i {
+      background: var(--bg-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .navbar-nav .nav-link {
+      position: relative;
+      color: #4A5568;
+      font-weight: 500;
+      margin-left: 1rem;
+      padding: 0.5rem 0;
+      transition: color 0.3s ease;
+    }
+
+    .navbar-nav .nav-link:hover,
+    .navbar-nav .nav-link.active {
+      color: var(--primary-color);
+    }
+
+    .navbar-nav .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--bg-gradient);
+      border-radius: 2px;
+    }
+
+    .page-header {
+      background: var(--bg-gradient);
+      color: white;
+      padding: 2rem 0;
+      margin-bottom: 2rem;
+      border-radius: 0 0 30px 30px;
+    }
+
+    .page-header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2D3748;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 24px;
+      background: var(--bg-gradient);
+      border-radius: 2px;
+    }
+
+    .merchant-card {
+      background: white;
+      border-radius: 16px;
+      border: none;
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .merchant-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .merchant-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--bg-gradient);
+    }
+
+    .merchant-card .card-body {
+      padding: 1.5rem;
+    }
+
+    .merchant-card .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1A202C;
+      margin-bottom: 0.75rem;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .tag-takeout { 
+      background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%); 
+      color: #E65100; 
+    }
+    .tag-fresh { 
+      background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); 
+      color: #2E7D32; 
+    }
+    .tag-market { 
+      background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); 
+      color: #1565C0; 
+    }
+
+    .price-info {
+      display: flex;
+      justify-content: space-between;
+      margin: 1rem 0;
+      padding: 1rem;
+      background: #FAFBFC;
+      border-radius: 10px;
+    }
+
+    .price-item {
+      text-align: center;
+    }
+
+    .price-item-label {
+      font-size: 0.75rem;
+      color: #718096;
+      margin-bottom: 0.25rem;
+    }
+
+    .price-item-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1A202C;
+    }
+
+    .discount-section {
+      background: linear-gradient(135deg, #FFF5F5 0%, #FFF0E6 100%);
+      border-radius: 10px;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+
+    .discount-section p {
+      margin: 0;
+    }
+
+    .discount-label {
+      font-size: 0.875rem;
+      color: #805AD5;
+      font-weight: 500;
+    }
+
+    .discount-rules {
+      font-size: 0.875rem;
+      color: #553C9A;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: var(--bg-gradient);
+      border: none;
+      border-radius: 10px;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+    }
+
+    .btn-outline-primary {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      border-radius: 10px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .btn-outline-primary:hover {
+      background: var(--bg-gradient);
+      border-color: transparent;
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    }
+
+    .btn-secondary {
+      border-radius: 10px;
+      font-weight: 500;
+      background: #E2E8F0;
+      border: none;
+      color: #4A5568;
+    }
+
+    .btn-secondary:hover {
+      background: #CBD5E0;
+    }
+
+    .filter-btn {
+      border-radius: 20px;
+      padding: 0.5rem 1.25rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .filter-btn.active {
+      background: var(--bg-gradient);
+      border-color: transparent;
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    }
+
+    .calc-card {
+      background: white;
+      border-radius: 16px;
+      border: none;
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+    }
+
+    .calc-card .card-header {
+      background: var(--bg-gradient);
+      color: white;
+      border: none;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .calc-card .card-header h5 {
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .calc-card .card-body {
+      padding: 1.5rem;
+    }
+
+    .form-label {
+      font-weight: 600;
+      color: #4A5568;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-select,
+    .form-control {
+      border-radius: 10px;
+      border: 2px solid #E2E8F0;
+      padding: 0.75rem 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-select:focus,
+    .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+      outline: none;
+    }
+
+    .input-group-text {
+      border-radius: 10px 0 0 10px;
+      background: #FAFBFC;
+      border-color: #E2E8F0;
+      border-right: none;
+    }
+
+    .input-group .form-control {
+      border-radius: 0 10px 10px 0;
+      border-left: none;
+    }
+
+    .result-card {
+      background: white;
+      border-radius: 16px;
+      border: none;
+      box-shadow: var(--card-shadow);
+    }
+
+    .result-amount {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: var(--bg-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .best-discount {
+      background: linear-gradient(135deg, #FFF5F5 0%, #FFF0E6 100%);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin: 1rem 0;
+    }
+
+    .best-discount .discount-title {
+      font-size: 0.875rem;
+      color: #718096;
+      margin-bottom: 0.5rem;
+    }
+
+    .best-discount .discount-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .price-compare {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .compare-item {
+      background: #FAFBFC;
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .compare-label {
+      font-size: 0.75rem;
+      color: #718096;
+      margin-bottom: 0.5rem;
+    }
+
+    .compare-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .compare-value.single { color: #4A5568; }
+    .compare-value.group { color: var(--success-color); }
+    .compare-value.save { color: var(--primary-color); }
+
+    .recommend-item {
+      background: white;
+      border-radius: 12px;
+      border: 2px solid #E2E8F0;
+      padding: 1rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .recommend-item:hover {
+      border-color: var(--primary-color);
+      transform: translateY(-4px);
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.15);
+    }
+
+    .recommend-item-name {
+      font-weight: 600;
+      color: #1A202C;
+      margin-bottom: 0.5rem;
+    }
+
+    .recommend-item-price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 0.75rem;
+    }
+
+    .groupbuy-card {
+      background: white;
+      border-radius: 16px;
+      border: none;
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .groupbuy-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .groupbuy-card .card-body {
+      padding: 1.5rem;
+    }
+
+    .groupbuy-card .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1A202C;
+    }
+
+    .groupbuy-info {
+      margin: 1rem 0;
+    }
+
+    .groupbuy-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #EDF2F7;
+    }
+
+    .groupbuy-row:last-child {
+      border-bottom: none;
+    }
+
+    .groupbuy-label {
+      color: #718096;
+      font-size: 0.875rem;
+    }
+
+    .groupbuy-value {
+      font-weight: 600;
+      color: #1A202C;
+    }
+
+    .groupbuy-value.success {
+      color: var(--success-color);
+    }
+
+    .groupbuy-value.primary {
+      color: var(--primary-color);
+    }
+
+    .profile-card {
+      background: white;
+      border-radius: 16px;
+      border: none;
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+    }
+
+    .profile-header {
+      background: var(--bg-gradient);
+      padding: 2.5rem 1.5rem 1.5rem;
+      text-align: center;
+    }
+
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      border: 4px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .avatar i {
+      font-size: 2.5rem;
+      color: white;
+    }
+
+    .profile-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 0.5rem;
+    }
+
+    .profile-credit {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 0.25rem 1rem;
+      border-radius: 20px;
+      color: white;
+      font-weight: 500;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      border: none;
+      box-shadow: var(--card-shadow);
+      padding: 1.25rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .stat-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-count {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1A202C;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: #718096;
+    }
+
+    .reminder-item {
+      background: #FAFBFC;
+      border-radius: 10px;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      transition: all 0.3s ease;
+    }
+
+    .reminder-item:hover {
+      background: #EDF2F7;
+    }
+
+    .reminder-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .reminder-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .reminder-icon i {
+      color: #E65100;
+    }
+
+    .reminder-details h6 {
+      font-weight: 600;
+      color: #1A202C;
+      margin: 0 0 0.25rem;
+    }
+
+    .reminder-details p {
+      font-size: 0.875rem;
+      color: #718096;
+      margin: 0;
+    }
+
+    .modal-content {
+      border-radius: 20px;
+      border: none;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+      background: var(--bg-gradient);
+      color: white;
+      border-radius: 20px 20px 0 0;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .modal-header .modal-title {
+      font-weight: 600;
+    }
+
+    .modal-header .btn-close {
+      color: white;
+      opacity: 0.8;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #EDF2F7;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+
+    .empty-icon {
+      font-size: 4rem;
+      color: #CBD5E0;
+      margin-bottom: 1rem;
+    }
+
+    .empty-text {
+      color: #718096;
+      font-size: 1.1rem;
+    }
+
+    @media (max-width: 768px) {
+      .navbar-nav .nav-link {
+        margin-left: 0;
+        padding: 0.75rem 0;
+      }
+
+      .navbar-nav .nav-link.active::after {
+        display: none;
+      }
+
+      .price-compare {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="#">
+        <i class="fa fa-shopping-cart" style="font-size: 1.5rem;"></i>
+        <span class="ms-2">邻拼购</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link active" href="#merchants">周边商家</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#calculator">凑单计算</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#groupbuy">拼单广场</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#profile">个人中心</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>省钱拼单，快乐生活</h1>
+      <p>智能计算最优满减方案，轻松找到同小区拼友</p>
+    </div>
+  </div>
+
+  <div class="container mb-6">
+    <div class="tab-content" id="mainContent">
+      <!-- 周边商家 -->
+      <div class="tab-pane fade show active" id="merchants">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+          <h2 class="section-title">周边商家</h2>
+          <div class="d-flex gap-2">
+            <button class="filter-btn btn btn-outline-secondary btn-sm active" data-type="all">全部</button>
+            <button class="filter-btn btn btn-outline-secondary btn-sm" data-type="takeout">外卖</button>
+            <button class="filter-btn btn btn-outline-secondary btn-sm" data-type="fresh">生鲜</button>
+            <button class="filter-btn btn btn-outline-secondary btn-sm" data-type="market">商超</button>
+          </div>
+        </div>
+        <div id="merchantList" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        </div>
+      </div>
+
+      <!-- 凑单计算器 -->
+      <div class="tab-pane fade" id="calculator">
+        <h2 class="section-title">智能凑单计算器</h2>
+        <div class="row g-4">
+          <div class="col-md-5">
+            <div class="calc-card">
+              <div class="card-header">
+                <h5><i class="fa fa-calculator me-2"></i>计算设置</h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-4">
+                  <label class="form-label">选择商家</label>
+                  <select id="calcMerchant" class="form-select"></select>
+                </div>
+                <div class="mb-4">
+                  <label class="form-label">当前购物金额</label>
+                  <div class="input-group">
+                    <span class="input-group-text">¥</span>
+                    <input type="number" id="selectedPrice" class="form-control" placeholder="请输入金额" value="25">
+                  </div>
+                </div>
+                <button id="calcBtn" class="btn btn-primary w-100 py-3">
+                  <i class="fa fa-magic me-2"></i>开始计算
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-7">
+            <div class="result-card">
+              <div class="card-body">
+                <h5 class="card-title mb-4"><i class="fa fa-bar-chart me-2"></i>计算结果</h5>
+                <div id="calcResult" class="empty-state">
+                  <i class="fa fa-calculator empty-icon"></i>
+                  <p class="empty-text">请选择商家并输入金额</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 card">
+          <div class="card-body">
+            <h5 class="card-title mb-3"><i class="fa fa-lightbulb-o me-2"></i>推荐凑单品</h5>
+            <div id="recommendItems" class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 拼单广场 -->
+      <div class="tab-pane fade" id="groupbuy">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2 class="section-title">拼单广场</h2>
+          <button id="publishBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#publishModal">
+            <i class="fa fa-plus me-1"></i> 发布拼单
+          </button>
+        </div>
+        <div id="groupbuyList" class="row row-cols-1 row-cols-md-2 g-4">
+        </div>
+      </div>
+
+      <!-- 个人中心 -->
+      <div class="tab-pane fade" id="profile">
+        <div class="profile-card mb-4">
+          <div class="profile-header">
+            <div class="avatar">
+              <i class="fa fa-user"></i>
+            </div>
+            <h3 id="userNickname" class="profile-name">用户昵称</h3>
+            <div class="profile-credit">
+              <i class="fa fa-star"></i>
+              <span>信用优秀</span>
+              <span class="mx-2">|</span>
+              <span>信用分: <strong>100</strong></span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="stats-grid mb-4">
+          <div class="stat-card">
+            <i class="fa fa-list-alt text-primary stat-icon"></i>
+            <p class="stat-count" id="orderCount">0</p>
+            <p class="stat-label">参与拼单</p>
+          </div>
+          <div class="stat-card">
+            <i class="fa fa-bell text-warning stat-icon"></i>
+            <p class="stat-count" id="reminderCount">0</p>
+            <p class="stat-label">食材提醒</p>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title mb-3"><i class="fa fa-calendar-check-o me-2"></i>食材保质期提醒</h5>
+            <button id="addReminderBtn" class="btn btn-outline-primary w-100 mb-4" data-bs-toggle="modal" data-bs-target="#reminderModal">
+              <i class="fa fa-plus me-1"></i> 添加提醒
+            </button>
+            <div id="reminderList">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 发布拼单弹窗 -->
+  <div class="modal fade" id="publishModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fa fa-plus-circle me-2"></i>发布拼单</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">选择商家</label>
+            <select id="publishMerchant" class="form-select"></select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">预计下单时间</label>
+            <input type="datetime-local" id="orderTime" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">最多人数</label>
+            <input type="number" id="maxPeople" class="form-control" value="3" min="2" max="10">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">每人分摊金额</label>
+            <div class="input-group">
+              <span class="input-group-text">¥</span>
+              <input type="number" id="shareAmount" class="form-control" placeholder="请输入金额">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">备注说明</label>
+            <textarea id="remark" class="form-control" rows="3" placeholder="可以写一些拼单要求..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="button" id="submitPublish" class="btn btn-primary">发布</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 添加提醒弹窗 -->
+  <div class="modal fade" id="reminderModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fa fa-calendar-plus-o me-2"></i>添加食材提醒</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">食材名称</label>
+            <input type="text" id="foodName" class="form-control" placeholder="请输入食材名称">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">食材类型</label>
+            <select id="foodType" class="form-select">
+              <option value="vegetable">蔬菜</option>
+              <option value="fruit">水果</option>
+              <option value="meat">肉类</option>
+              <option value="dairy">蛋奶</option>
+              <option value="other">其他</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">过期日期</label>
+            <input type="date" id="expireDate" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">提前提醒时间</label>
+            <select id="remindTime" class="form-select">
+              <option value="1">提前1天</option>
+              <option value="2">提前2天</option>
+              <option value="3">提前3天</option>
+              <option value="7">提前1周</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="button" id="submitReminder" class="btn btn-primary">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
